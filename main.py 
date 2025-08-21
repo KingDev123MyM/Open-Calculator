@@ -1,75 +1,104 @@
-def mostrar_menu():
-    print("\n=== Open Calculator ===")
-    print("1. Sumar")
-    print("2. Restar")
-    print("3. Multiplicar")
-    print("4. Dividir")
-    print("5. Potencia")
-    print("6. Raíz cuadrada")
-    print("7. Salir")
+import tkinter as tk
 
-def pedir_numero(mensaje):
-    while True:
-        try:
-            return float(input(mensaje))
-        except ValueError:
-            print("Por favor, ingresa un número válido.")
+# Colores y fuentes para modo oscuro y estilo Google con detalles verdes
+BG_COLOR = "#222831"       # fondo principal
+BTN_COLOR = "#393E46"      # botones normales
+BTN_TEXT_COLOR = "#EEEEEE" # texto normal
+BTN_GREEN = "#21C26D"      # verde para igual (=)
+BTN_GREEN_TEXT = "#222831" # texto oscuro en botón verde
+FONT = ("Roboto", 18)
+DISPLAY_FONT = ("Roboto", 28)
 
-def suma(a, b):
-    return a + b
+class OpenCalculator(tk.Tk):
+    def __init__(self):
+        super().__init__()
+        self.title("Open Calculator")
+        self.geometry("350x500")
+        self.resizable(False, False)
+        self.config(bg=BG_COLOR)
+        self.expresion = ""
+        self.crear_widgets()
 
-def resta(a, b):
-    return a - b
+    def crear_widgets(self):
+        # Display
+        self.display = tk.Entry(self, font=DISPLAY_FONT, bd=0, bg=BG_COLOR, fg=BTN_TEXT_COLOR, justify="right")
+        self.display.pack(fill="both", ipady=20, pady=(20, 10), padx=10)
+        self.display.insert(0, "0")
 
-def multiplicacion(a, b):
-    return a * b
+        # Botones (diseño tipo Google)
+        botones = [
+            ["7", "8", "9", "/"],
+            ["4", "5", "6", "*"],
+            ["1", "2", "3", "-"],
+            ["0", ".", "C", "+"],
+        ]
 
-def division(a, b):
-    if b == 0:
-        return "Error: No se puede dividir por cero."
-    return a / b
+        for fila in botones:
+            frame = tk.Frame(self, bg=BG_COLOR)
+            frame.pack(expand=True, fill="both")
+            for texto in fila:
+                if texto == "C":
+                    b = tk.Button(frame, text=texto, font=FONT, bg="#FF6161", fg="#FFFFFF", bd=0, highlightthickness=0,
+                                  activebackground="#FF8181", activeforeground="#FFFFFF",
+                                  command=self.limpiar)
+                else:
+                    b = tk.Button(frame, text=texto, font=FONT, bg=BTN_COLOR, fg=BTN_TEXT_COLOR, bd=0, highlightthickness=0,
+                                  activebackground="#575E6B", activeforeground=BTN_TEXT_COLOR,
+                                  command=lambda t=texto: self.click(t))
+                b.pack(side="left", expand=True, fill="both", padx=3, pady=3)
 
-def potencia(a, b):
-    return a ** b
+        # Última fila: Potencia, Raíz, Igual (=)
+        frame = tk.Frame(self, bg=BG_COLOR)
+        frame.pack(expand=True, fill="both")
 
-def raiz_cuadrada(a):
-    if a < 0:
-        return "Error: No se puede calcular la raíz cuadrada de un número negativo."
-    return a ** 0.5
+        b_pot = tk.Button(frame, text="^", font=FONT, bg=BTN_COLOR, fg=BTN_TEXT_COLOR, bd=0, highlightthickness=0,
+                          activebackground="#575E6B", activeforeground=BTN_TEXT_COLOR,
+                          command=lambda: self.click("^"))
+        b_pot.pack(side="left", expand=True, fill="both", padx=3, pady=3)
 
-def main():
-    while True:
-        mostrar_menu()
-        opcion = input("Selecciona una opción (1-7): ")
+        b_raiz = tk.Button(frame, text="√", font=FONT, bg=BTN_COLOR, fg=BTN_TEXT_COLOR, bd=0, highlightthickness=0,
+                           activebackground="#575E6B", activeforeground=BTN_TEXT_COLOR,
+                           command=lambda: self.click("√"))
+        b_raiz.pack(side="left", expand=True, fill="both", padx=3, pady=3)
 
-        if opcion == '1':  # Sumar
-            a = pedir_numero("Primer número: ")
-            b = pedir_numero("Segundo número: ")
-            print(f"Resultado: {suma(a, b)}")
-        elif opcion == '2':  # Restar
-            a = pedir_numero("Primer número: ")
-            b = pedir_numero("Segundo número: ")
-            print(f"Resultado: {resta(a, b)}")
-        elif opcion == '3':  # Multiplicar
-            a = pedir_numero("Primer número: ")
-            b = pedir_numero("Segundo número: ")
-            print(f"Resultado: {multiplicacion(a, b)}")
-        elif opcion == '4':  # Dividir
-            a = pedir_numero("Dividendo: ")
-            b = pedir_numero("Divisor: ")
-            print(f"Resultado: {division(a, b)}")
-        elif opcion == '5':  # Potencia
-            a = pedir_numero("Base: ")
-            b = pedir_numero("Exponente: ")
-            print(f"Resultado: {potencia(a, b)}")
-        elif opcion == '6':  # Raíz cuadrada
-            a = pedir_numero("Número: ")
-            print(f"Resultado: {raiz_cuadrada(a)}")
-        elif opcion == '7':  # Salir
-            print("¡Gracias por usar Open Calculator!")
-            break
+        b_igual = tk.Button(frame, text="=", font=FONT, bg=BTN_GREEN, fg=BTN_GREEN_TEXT, bd=0, highlightthickness=0,
+                            activebackground="#37db8b", activeforeground=BTN_GREEN_TEXT,
+                            command=self.calcular)
+        b_igual.pack(side="left", expand=True, fill="both", padx=3, pady=3)
+
+    def click(self, item):
+        if self.display.get() == "0" or self.display.get().startswith("Error"):
+            self.display.delete(0, tk.END)
+        if item == "^":
+            self.display.insert(tk.END, "**")
+        elif item == "√":
+            self.display.insert(tk.END, "√(")
         else:
-            print("Opción no válida. Intenta de nuevo.")
+            self.display.insert(tk.END, item)
+
+    def limpiar(self):
+        self.display.delete(0, tk.END)
+        self.display.insert(0, "0")
+
+    def calcular(self):
+        try:
+            expresion = self.display.get().replace("√", "sqrt")
+            # Soporte para raíz cuadrada
+            def sqrt(x):
+                import math
+                if float(x) < 0:
+                    raise ValueError
+                return math.sqrt(float(x))
+            # Evaluar de manera segura
+            resultado = eval(expresion, {"__builtins__": None}, {"sqrt": sqrt})
+            self.display.delete(0, tk.END)
+            self.display.insert(0, str(resultado))
+        except ZeroDivisionError:
+            self.display.delete(0, tk.END)
+            self.display.insert(0, "Error: División por cero")
+        except Exception:
+            self.display.delete(0, tk.END)
+            self.display.insert(0, "Error")
 
 if __name__ == "__main__":
-    main()
+    OpenCalculator().mainloop()
